@@ -12,9 +12,9 @@ using Windows.Web.Http.Headers;
 
 namespace SharePointAssistant.Office365
 {
-    public class SharePoint
+    public static class SharePoint
     {
-        public static async Task<List<string>> GetAnnouncements()
+        public static async Task<List<string>> GetListItems(string listName)
         {
             // Use the discovery service to get the URL of the root site and an access token to talk to it.
             string accessToken = await GetAccessTokenForResource("https://api.office.com/discovery/");
@@ -24,7 +24,7 @@ namespace SharePointAssistant.Office365
             var sharePointServiceEndpointUri = result.ServiceEndpointUri.ToString();
 
             // Construct an HTTP request to bring back te contents of the Announcements list in the root site.
-            string url = sharePointServiceEndpointUri + "/web/lists/GetByTitle('Announcements')/items";
+            string url = string.Format("{0}/web/lists/GetByTitle('{1}')/items", sharePointServiceEndpointUri, listName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
             request.Headers.Add("Accept", "text/xml");
 

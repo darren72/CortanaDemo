@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+﻿using SharePointAssistant.Office365;
+using SharePointAssistant.Voice;
+using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace SharePointAssistant
@@ -20,7 +13,7 @@ namespace SharePointAssistant
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    sealed partial class App : Application
+    sealed partial class App
     {
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -31,8 +24,48 @@ namespace SharePointAssistant
             Microsoft.ApplicationInsights.WindowsAppInitializer.InitializeAsync(
                 Microsoft.ApplicationInsights.WindowsCollectors.Metadata |
                 Microsoft.ApplicationInsights.WindowsCollectors.Session);
-            this.InitializeComponent();
-            this.Suspending += OnSuspending;
+            InitializeComponent();
+            Suspending += OnSuspending;
+        }
+
+        protected override async void OnActivated(IActivatedEventArgs args)
+        {
+            // Was the app activated by a voice command?
+            if (args.Kind == ActivationKind.VoiceCommand)
+            {
+                // Need to put this here to make sure the main page is displayed.
+                Frame rootFrame = Window.Current.Content as Frame;
+                if (rootFrame == null)
+                {
+                    rootFrame = new Frame();
+                    rootFrame.CacheSize = 1;
+                    Window.Current.Content = rootFrame;
+                    rootFrame.Navigate(typeof(MainPage));
+                }
+                Window.Current.Activate();
+
+                var commandArgs = args as VoiceCommandActivatedEventArgs;
+                if (commandArgs != null)
+                {
+                    Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = commandArgs.Result;
+
+                    // What command was issued?
+                    string voiceCommandName = speechRecognitionResult.RulePath[0];
+
+                    if (voiceCommandName == "ShowMeAll")
+                    {
+                        // TODO - find a better way to access the list name from the phrase list.
+                        // Get the name of the list the user wants.
+                        string textSpoken = speechRecognitionResult.Text;
+                        string listName = textSpoken.Substring(textSpoken.LastIndexOf(" ", StringComparison.Ordinal)).Trim();
+
+                        // Pull back the list items and display them on the UI
+                        // TODO - need a better way to update the Main Page than this.
+                        var announcements = await SharePoint.GetListItems(listName);
+                        await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => MainPage.Instance.UpdateListView(announcements));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -46,9 +79,12 @@ namespace SharePointAssistant
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                this.DebugSettings.EnableFrameRateCounter = true;
+                DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
+            // Register our voice commands with the application.
+            VoiceServices.RegisterVoiceCommands();
+           
 
             Frame rootFrame = Window.Current.Content as Frame;
 
