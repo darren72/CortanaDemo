@@ -4,5 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SharePointAssistant"
     RequestedTheme="Light">
+    <Application.Resources>
+        <x:String x:Key="ida:ClientId">ccd3c92a-84cb-485f-80a3-9257d10d5127</x:String>
+        <x:String x:Key="ida:AADInstance">https://login.microsoftonline.com/</x:String>
+        <x:String x:Key="ida:Domain">smbsoftware.onmicrosoft.com</x:String>
+    </Application.Resources>
 
 </Application>

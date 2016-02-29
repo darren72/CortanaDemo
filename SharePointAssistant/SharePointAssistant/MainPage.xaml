@@ -10,7 +10,12 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
             <TextBlock FontSize="40" TextAlignment="Center">SharePoint Assistant</TextBlock>
-            <TextBlock FontSize="20" Name="InfoBlock"></TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Name="GetListItems" Margin="10" Click="GetListItems_OnClick" >Get Announcements</Button>
+                <Button Name="ClearListItems" Margin="10" Click="ClearListItems_OnClickListItems_OnClick" >Clear Announcements</Button>
+            </StackPanel>
+            <TextBlock FontSize="20" TextAlignment="Center">Announcements</TextBlock>
+            <ListView Margin="20" Name="AnnouncementsList"></ListView>
         </StackPanel>
     </Grid>
 </Page>
